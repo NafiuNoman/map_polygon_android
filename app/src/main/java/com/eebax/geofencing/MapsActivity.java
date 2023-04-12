@@ -218,13 +218,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private  void  addCircle(LatLng latLng, float radius)
-    {
+    private void addCircle(LatLng latLng, float radius) {
         CircleOptions circleOptions = new CircleOptions()
                 .center(latLng)
                 .radius(radius)
-                .fillColor(Color.argb(64, 255, 0, 0))
                 .strokeWidth(4)
+                .fillColor(Color.argb(64, 255, 0, 0))
                 .strokeColor(Color.argb(255, 255, 0, 0));
 
         mMap.addCircle(circleOptions);
@@ -236,26 +235,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void addPolygon() {
         // Define the vertices of the polygon
-        List<LatLng> polygonVertices = new ArrayList<>();
-        polygonVertices.add(new LatLng(37.35, -122.0));
-        polygonVertices.add(new LatLng(37.45, -122.0));
-        polygonVertices.add(new LatLng(37.45, -121.8));
-        polygonVertices.add(new LatLng(37.35, -121.8));
+        List<LatLng> polygonPoints = new ArrayList<>();
+
+
+        polygonPoints.add(new LatLng(23.826507116922876, 90.41830848256144));
+        polygonPoints.add(new LatLng(23.82674645179267, 90.41844381015355));
+        polygonPoints.add(new LatLng(23.826845486782062, 90.41872348717723));
+        polygonPoints.add(new LatLng(23.826762957629484, 90.41894903316405));
+
+        polygonPoints.add(new LatLng(23.826655669652645, 90.41930088490355));
+        polygonPoints.add(new LatLng(23.826358564023007, 90.41910691535487));
+        polygonPoints.add(new LatLng(23.82628428750929, 90.41856560498647));
+        polygonPoints.add(new LatLng(23.826556634518358, 90.41843027739436));
 
 // Create a PolygonOptions object to define the properties of the polygon
         PolygonOptions polygonOptions = new PolygonOptions()
-                .addAll(polygonVertices) // Add the vertices of the polygon
+                .addAll(polygonPoints) // Add the vertices of the polygon
+                .strokeWidth(4)
                 .strokeColor(Color.argb(255, 255, 0, 0))
-                .fillColor(Color.argb(64, 255, 0, 0))
-                .strokeWidth(4) // Set the stroke width
-                .fillColor(Color.BLUE);
+                .fillColor(Color.argb(64, 255, 0, 0));
 
 
 // Add the polygon to the map
         Polygon polygon = mMap.addPolygon(polygonOptions);
-        MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(37.35, -122.0));
 
-        mMap.addMarker(markerOptions);
     }
 
 }
