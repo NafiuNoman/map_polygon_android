@@ -11,6 +11,8 @@ import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.List;
+
 public class GeofenceHelper extends ContextWrapper {
 
     private static final String TAG = "GeofenceHelper";
@@ -20,15 +22,24 @@ public class GeofenceHelper extends ContextWrapper {
         super(base);
     }
 
-    public GeofencingRequest getGeofencingRequest(Geofence geofence) {
+//    public GeofencingRequest getGeofencingRequest(Geofence geofence) {
+//
+//        return new GeofencingRequest.Builder().addGeofence(geofence).setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER).build();
+//    }//previous
 
-        return new GeofencingRequest.Builder().addGeofence(geofence).setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER).build();
+    public GeofencingRequest getGeofencingRequest(List <Geofence> geofenceList) {
+
+        return new GeofencingRequest.Builder()
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .addGeofences(geofenceList)
+               .build();
     }
 
-    public Geofence getGeofence(String ID, LatLng latLng, float radius, int transitionTypes) {
+    public Geofence getGeofence(String ID, LatLng latLng, List<LatLng> polygonPoints, float radius, int transitionTypes) {
 
         return new Geofence.Builder()
-                .setCircularRegion(latLng.latitude, latLng.longitude, radius)
+//                .setCircularRegion(latLng.latitude, latLng.longitude, radius)//previous one
+                .setCircularRegion(polygonPoints.get(0).latitude, polygonPoints.get(0).longitude, radius)
                 .setRequestId(ID)
                 .setTransitionTypes(transitionTypes)
                 .setLoiteringDelay(5000)

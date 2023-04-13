@@ -1,6 +1,5 @@
 package com.eebax.geofencing;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -23,7 +22,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -36,17 +34,25 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    PolygonModel polygonModel;
     private static final String TAG = "MapsActivity";
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
+    List<Geofence> geofenceList = new ArrayList<>();
 
     GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
 
-    private float GEOFENCE_RADIUS = 200;
+    private float GEOFENCE_RADIUS = 10;//in meters
     private String GEOFENCE_ID = "SOME_GEOFENCE_ID";
 
     private int FINE_LOCATION_ACCESS_REQUEST_CODE = 10001;
@@ -65,8 +71,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
+
+
+
+
+
+
         geofencingClient = LocationServices.getGeofencingClient(this);
         geofenceHelper = new GeofenceHelper(this);
+
+
+
     }
 
 
@@ -86,13 +102,90 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0f
         ));
 
-        enableUserLocation();
-        addMarker(latLng);
-        addCircle(latLng, GEOFENCE_RADIUS);
-        addGeofence(latLng, GEOFENCE_RADIUS);
+
+
+
+
+//  polygonPointsModel = new PolygonPointsModel();
+
+//        List<LatLng> polygonPoints = new ArrayList<>();
+//
+//        polygonPoints.add(new LatLng(23.826507116922876, 90.41830848256144));
+//        polygonPoints.add(new LatLng(23.82674645179267, 90.41844381015355));
+//        polygonPoints.add(new LatLng(23.826845486782062, 90.41872348717723));
+//        polygonPoints.add(new LatLng(23.826762957629484, 90.41894903316405));
+//
+//        polygonPoints.add(new LatLng(23.826655669652645, 90.41930088490355));
+//        polygonPoints.add(new LatLng(23.826358564023007, 90.41910691535487));
+//        polygonPoints.add(new LatLng(23.82628428750929, 90.41856560498647));
+//        polygonPoints.add(new LatLng(23.826556634518358, 90.41843027739436));
+//
+//        enableUserLocation();
+//        addMarker(latLng);
+//        addPolygon(polygonPoints);
+//        addCircle(latLng, GEOFENCE_RADIUS);
+////        addGeofence(latLng, GEOFENCE_RADIUS);//prevoius one
+//        addGeofence(latLng, GEOFENCE_RADIUS, polygonPoints);//new one
 
 
 //        mMap.setOnMapLongClickListener(this);
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://run.mocky.io/v3/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        Call<PolygonModel> call = apiService.getAllPolygon();
+        call.enqueue(new Callback<PolygonModel>() {
+            @Override
+            public void onResponse(Call<PolygonModel> call, Response<PolygonModel> response) {
+                if (response.isSuccessful() && response.code() == 200) {
+
+                    polygonModel = response.body();
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PolygonModel> call, Throwable t) {
+
+            }
+        });
+
+        if (polygonModel != null) {
+            generateAllPolygon(polygonModel);
+
+        }
+
+
+    }
+
+    private void generateAllPolygon(PolygonModel polygonModel) {
+
+        List<List<CoordinateModel>> polygonList = polygonModel.getCoordinates();
+        for (List<CoordinateModel> polygon : polygonList) {
+
+
+            List<LatLng> polygonPoints = new ArrayList<>();
+
+
+            for (CoordinateModel points : polygon) {
+
+                //evey single point of the polygon
+                polygonPoints.add(new LatLng(points.getLat(), points.getLong()));
+
+
+            }
+
+            addPolygon(polygonPoints);
+        }
+
+
+//        polygonModel = new PolygonModel(latLongModelList);
+
 
     }
 
@@ -182,10 +275,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        addGeofence(latLng, GEOFENCE_RADIUS);
 //    }
 
-    private void addGeofence(LatLng latLng, float radius) {
-        Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
+    private void addGeofence(LatLng latLng, float radius, List<LatLng> polygonPoints) {
+        Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, polygonPoints, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
+        geofenceList.add(geofence);
 
-        GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
+        GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofenceList);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -227,26 +321,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .strokeColor(Color.argb(255, 255, 0, 0));
 
         mMap.addCircle(circleOptions);
-        addPolygon();
 
 
     }
 
 
-    private void addPolygon() {
+    private void addPolygon(List<LatLng> polygonPoints) {
         // Define the vertices of the polygon
-        List<LatLng> polygonPoints = new ArrayList<>();
+//        List<LatLng> polygonPoints = new ArrayList<>();
 
 
-        polygonPoints.add(new LatLng(23.826507116922876, 90.41830848256144));
-        polygonPoints.add(new LatLng(23.82674645179267, 90.41844381015355));
-        polygonPoints.add(new LatLng(23.826845486782062, 90.41872348717723));
-        polygonPoints.add(new LatLng(23.826762957629484, 90.41894903316405));
-
-        polygonPoints.add(new LatLng(23.826655669652645, 90.41930088490355));
-        polygonPoints.add(new LatLng(23.826358564023007, 90.41910691535487));
-        polygonPoints.add(new LatLng(23.82628428750929, 90.41856560498647));
-        polygonPoints.add(new LatLng(23.826556634518358, 90.41843027739436));
+//        polygonPoints.add(new LatLng(23.826507116922876, 90.41830848256144));
+//        polygonPoints.add(new LatLng(23.82674645179267, 90.41844381015355));
+//        polygonPoints.add(new LatLng(23.826845486782062, 90.41872348717723));
+//        polygonPoints.add(new LatLng(23.826762957629484, 90.41894903316405));
+//
+//        polygonPoints.add(new LatLng(23.826655669652645, 90.41930088490355));
+//        polygonPoints.add(new LatLng(23.826358564023007, 90.41910691535487));
+//        polygonPoints.add(new LatLng(23.82628428750929, 90.41856560498647));
+//        polygonPoints.add(new LatLng(23.826556634518358, 90.41843027739436));
 
 // Create a PolygonOptions object to define the properties of the polygon
         PolygonOptions polygonOptions = new PolygonOptions()
