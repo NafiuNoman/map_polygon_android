@@ -52,12 +52,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
 
-    private float GEOFENCE_RADIUS = 10;//in meters
-    private String GEOFENCE_ID = "SOME_GEOFENCE_ID";
+    private final float GEOFENCE_RADIUS = 10;//in meters
+    private final String GEOFENCE_ID = "SOME_GEOFENCE_ID";
 
-    private int FINE_LOCATION_ACCESS_REQUEST_CODE = 10001;
-    private int REQUEST_BACKGROUND_LOCATION_PERMISSION = 100;
-    private int BACKGROUND_LOCATION_ACCESS_REQUEST_CODE = 10002;
+    private final int FINE_LOCATION_ACCESS_REQUEST_CODE = 10001;
+    private final int REQUEST_BACKGROUND_LOCATION_PERMISSION = 100;
+    private final int BACKGROUND_LOCATION_ACCESS_REQUEST_CODE = 10002;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,139 +69,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
-
-
-
-
-
-
 
 
         geofencingClient = LocationServices.getGeofencingClient(this);
         geofenceHelper = new GeofenceHelper(this);
 
 
-
     }
 
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-
-        if (!hasBackgroundLocationPermission()) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_BACKGROUND_LOCATION_PERMISSION);
-        }
-
-        // Add a marker in Nikunjo 1 and move the camera
-        LatLng latLng = new LatLng(23.82500073060955, 90.41795113718227);
-
-        mMap.addMarker(new MarkerOptions().position(latLng).title("Marker in Nikunjo 1"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0f
-        ));
-
-
-
-
-
-//  polygonPointsModel = new PolygonPointsModel();
-
-//        List<LatLng> polygonPoints = new ArrayList<>();
-//
-//        polygonPoints.add(new LatLng(23.826507116922876, 90.41830848256144));
-//        polygonPoints.add(new LatLng(23.82674645179267, 90.41844381015355));
-//        polygonPoints.add(new LatLng(23.826845486782062, 90.41872348717723));
-//        polygonPoints.add(new LatLng(23.826762957629484, 90.41894903316405));
-//
-//        polygonPoints.add(new LatLng(23.826655669652645, 90.41930088490355));
-//        polygonPoints.add(new LatLng(23.826358564023007, 90.41910691535487));
-//        polygonPoints.add(new LatLng(23.82628428750929, 90.41856560498647));
-//        polygonPoints.add(new LatLng(23.826556634518358, 90.41843027739436));
-//
-//        enableUserLocation();
-//        addMarker(latLng);
-//        addPolygon(polygonPoints);
-//        addCircle(latLng, GEOFENCE_RADIUS);
-////        addGeofence(latLng, GEOFENCE_RADIUS);//prevoius one
-//        addGeofence(latLng, GEOFENCE_RADIUS, polygonPoints);//new one
-
-
-//        mMap.setOnMapLongClickListener(this);
-
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://run.mocky.io/v3/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        ApiService apiService = retrofit.create(ApiService.class);
-
-        Call<PolygonModel> call = apiService.getAllPolygon();
-        call.enqueue(new Callback<PolygonModel>() {
-            @Override
-            public void onResponse(Call<PolygonModel> call, Response<PolygonModel> response) {
-                if (response.isSuccessful() && response.code() == 200) {
-
-                    polygonModel = response.body();
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<PolygonModel> call, Throwable t) {
-
-            }
-        });
-
-        if (polygonModel != null) {
-            generateAllPolygon(polygonModel);
-
-        }
-
-
-    }
-
-    private void generateAllPolygon(PolygonModel polygonModel) {
-
-        List<List<CoordinateModel>> polygonList = polygonModel.getCoordinates();
-        for (List<CoordinateModel> polygon : polygonList) {
-
-
-            List<LatLng> polygonPoints = new ArrayList<>();
-
-
-            for (CoordinateModel points : polygon) {
-
-                //evey single point of the polygon
-                polygonPoints.add(new LatLng(points.getLat(), points.getLong()));
-
-
-            }
-
-            addPolygon(polygonPoints);
-        }
-
-
-//        polygonModel = new PolygonModel(latLongModelList);
-
-
-    }
-
-    private void enableUserLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mMap.setMyLocationEnabled(true);
-        } else {
-            //Ask for permission
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                //We need to show user a dialog for displaying why the permission is needed and then ask for the permission...
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_ACCESS_REQUEST_CODE);
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_ACCESS_REQUEST_CODE);
-            }
-        }
-    }
 
     private boolean hasBackgroundLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -247,36 +124,99 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-//    @Override
-//    public void onMapLongClick(LatLng latLng) {
-//        if (Build.VERSION.SDK_INT >= 29) {
-//            //We need background permission
-//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//                handleMapLongClick(latLng);
-//            } else {
-//                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
-//                    //We show a dialog and ask for permission
-//                    ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_ACCESS_REQUEST_CODE);
-//                } else {
-//                    ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_ACCESS_REQUEST_CODE);
-//                }
-//            }
-//
-//        } else {
-//            handleMapLongClick(latLng);
-//        }
-//
-//    }
+    private void enableUserLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mMap.setMyLocationEnabled(true);
+        } else {
+            //Ask for permission
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                //We need to show user a dialog for displaying why the permission is needed and then ask for the permission...
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_ACCESS_REQUEST_CODE);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_ACCESS_REQUEST_CODE);
+            }
+        }
+    }
 
-//    private void handleMapLongClick(LatLng latLng) {
-//        mMap.clear();
-//        addMarker(latLng);
-//        addCircle(latLng, GEOFENCE_RADIUS);
-//        addGeofence(latLng, GEOFENCE_RADIUS);
-//    }
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        mMap = googleMap;
 
-    private void addGeofence(LatLng latLng, float radius, List<LatLng> polygonPoints) {
-        Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, polygonPoints, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
+
+        if (!hasBackgroundLocationPermission()) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_BACKGROUND_LOCATION_PERMISSION);
+        }
+
+        // Add a marker in Nikunjo 1 and move the camera
+        LatLng latLng = new LatLng(23.82500073060955, 90.41795113718227);
+
+        mMap.addMarker(new MarkerOptions().position(latLng).title("Marker in Nikunjo 1"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0f
+        ));
+
+
+        enableUserLocation();
+        addMarker(latLng);
+        addCircle(latLng, GEOFENCE_RADIUS);
+
+
+//        mMap.setOnMapLongClickListener(this);
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://run.mocky.io/v3/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        Call<PolygonModel> call = apiService.getAllPolygon();
+        call.enqueue(new Callback<PolygonModel>() {
+            @Override
+            public void onResponse(@NonNull Call<PolygonModel> call, @NonNull Response<PolygonModel> response) {
+                if (response.isSuccessful() && response.code() == 200) {
+
+                    polygonModel = response.body();
+                    if (polygonModel != null) {
+                        generateAllPolygon(polygonModel);
+
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PolygonModel> call, @NonNull Throwable t) {
+
+            }
+        });
+
+
+    }
+
+    private void generateAllPolygon(PolygonModel polygonModel) {
+
+        List<List<CoordinateModel>> polygonList = polygonModel.getCoordinates();
+        for (List<CoordinateModel> polygon : polygonList) {
+            List<LatLng> polygonPoints = new ArrayList<>();
+            for (CoordinateModel points : polygon) {
+                //evey single point of the polygon
+                polygonPoints.add(new LatLng(points.getLat(), points.getLong()));
+
+
+            }
+
+            addPolygon(polygonPoints);
+            addGeofence(GEOFENCE_RADIUS,polygonPoints);
+        }
+
+
+
+
+    }
+
+    private void addGeofence(float radius, List<LatLng> polygonPoints) {
+        Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, polygonPoints, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
         geofenceList.add(geofence);
 
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofenceList);
@@ -305,13 +245,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
-
     private void addMarker(LatLng latLng) {
         MarkerOptions markerOptions = new MarkerOptions().position(latLng);
         mMap.addMarker(markerOptions);
 
     }
-
     private void addCircle(LatLng latLng, float radius) {
         CircleOptions circleOptions = new CircleOptions()
                 .center(latLng)
@@ -324,23 +262,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
-
-
     private void addPolygon(List<LatLng> polygonPoints) {
-        // Define the vertices of the polygon
-//        List<LatLng> polygonPoints = new ArrayList<>();
-
-
-//        polygonPoints.add(new LatLng(23.826507116922876, 90.41830848256144));
-//        polygonPoints.add(new LatLng(23.82674645179267, 90.41844381015355));
-//        polygonPoints.add(new LatLng(23.826845486782062, 90.41872348717723));
-//        polygonPoints.add(new LatLng(23.826762957629484, 90.41894903316405));
-//
-//        polygonPoints.add(new LatLng(23.826655669652645, 90.41930088490355));
-//        polygonPoints.add(new LatLng(23.826358564023007, 90.41910691535487));
-//        polygonPoints.add(new LatLng(23.82628428750929, 90.41856560498647));
-//        polygonPoints.add(new LatLng(23.826556634518358, 90.41843027739436));
-
 // Create a PolygonOptions object to define the properties of the polygon
         PolygonOptions polygonOptions = new PolygonOptions()
                 .addAll(polygonPoints) // Add the vertices of the polygon
@@ -353,5 +275,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Polygon polygon = mMap.addPolygon(polygonOptions);
 
     }
+
+    //    @Override
+//    public void onMapLongClick(LatLng latLng) {
+//        if (Build.VERSION.SDK_INT >= 29) {
+//            //We need background permission
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                handleMapLongClick(latLng);
+//            } else {
+//                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+//                    //We show a dialog and ask for permission
+//                    ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_ACCESS_REQUEST_CODE);
+//                } else {
+//                    ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_ACCESS_REQUEST_CODE);
+//                }
+//            }
+//
+//        } else {
+//            handleMapLongClick(latLng);
+//        }
+//
+//    }
+
+//    private void handleMapLongClick(LatLng latLng) {
+//        mMap.clear();
+//        addMarker(latLng);
+//        addCircle(latLng, GEOFENCE_RADIUS);
+//        addGeofence(latLng, GEOFENCE_RADIUS);
+//    }
+
 
 }

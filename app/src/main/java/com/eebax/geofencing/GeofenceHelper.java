@@ -35,7 +35,7 @@ public class GeofenceHelper extends ContextWrapper {
                .build();
     }
 
-    public Geofence getGeofence(String ID, LatLng latLng, List<LatLng> polygonPoints, float radius, int transitionTypes) {
+    public Geofence getGeofence(String ID, List<LatLng> polygonPoints, float radius, int transitionTypes) {
 
         return new Geofence.Builder()
 //                .setCircularRegion(latLng.latitude, latLng.longitude, radius)//previous one
