@@ -46,7 +46,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
 
-    private float GEOFENCE_RADIUS = 200;
+    private float GEOFENCE_RADIUS = 90;
     private String GEOFENCE_ID = "SOME_GEOFENCE_ID";
 
     private int FINE_LOCATION_ACCESS_REQUEST_CODE = 10001;
@@ -227,7 +227,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .strokeColor(Color.argb(255, 255, 0, 0));
 
         mMap.addCircle(circleOptions);
-        addPolygon();
+//        addPolygon();
 
 
     }
