@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -15,11 +16,13 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 public class LocationManager {
 
     private FusedLocationProviderClient fusedLocationProviderClient;
+    public static String mobileModel;
 
     GoogleMap googleMap;
     LatLng currentLatLong;
@@ -33,6 +36,8 @@ public class LocationManager {
         this.activity = activity;
         this.context = context;
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
+        //no need because for both model permission will be same
+        mobileModel = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ? "WALTON" : "SAMSUNG";
 
     }
 
@@ -46,42 +51,31 @@ public class LocationManager {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == 0)
             isBackgroundPermissionGranted = true;
 
+        // All the permission is granted
+        if (isCoursePermissionGranted && isFinePermissionGranted) {
+            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(location -> {
+                if (location != null) {
+                    currentLatLong = new LatLng(location.getLatitude(), location.getLongitude());
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLong, 19));
+                    googleMap.addMarker(new MarkerOptions().position(currentLatLong));
+                    googleMap.setMyLocationEnabled(true);
+                    googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                    googleMap.getUiSettings().setAllGesturesEnabled(true);
+                }
 
-        if (isBackgroundPermissionGranted && isCoursePermissionGranted && isFinePermissionGranted) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            });
             return;
         } else {
-
+            //model is samsung and But  the permission is not granted
             ActivityCompat.requestPermissions(
                     activity,
                     new String[]{
                             Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION,
-                            Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                            Manifest.permission.ACCESS_COARSE_LOCATION},
                     1);
 
 
         }
-
-
-
-
-        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(location -> {
-            if (location != null) {
-                currentLatLong = new LatLng(location.getLatitude(), location.getLongitude());
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLong, 19));
-                googleMap.setMyLocationEnabled(true);
-                googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-                googleMap.getUiSettings().setAllGesturesEnabled(true);
-            }
-
-        });
 
 
     }
